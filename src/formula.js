@@ -1,25 +1,15 @@
-/// <reference path='utils.js' />
 'use strict';
 
-var utils = require('../src/utils'),
-
-    and = function () {
-        return { and: utils.args2arr(arguments) };
-    },
-
-    or = function () {
-        return { or : utils.args2arr(arguments) };
-    },
-
-    not = function (expr) {
-        return { not: expr };
-    };
-
 module.exports = {
-    and: and,
-    or: or,
-    not: not
+    and: function () {
+        return { and: Array.prototype.slice.call(arguments) };
+    },
+
+    or: function () {
+        return { or : Array.prototype.slice.call(arguments) };
+    },
+
+    not: function (expr) {
+        return { not: expr };
+    }
 };
-
-
-
