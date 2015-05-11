@@ -21,8 +21,14 @@
     "del": "^1.1.1",
     "gulp": "^3.8.11",
     "gulp-mocha": "^2.0.1",
+    "gulp-notify": "^2.2.0",
+    "gulp-plumber": "^1.0.0",
     "gulp-util": "^3.0.4",
+    "gulp-webmake": "0.0.4",
     "mocha": "^2.2.4",
     "should": "^6.0.1"
+  },
+  "dependencies": {
+    "node-uuid": "^1.4.3"
   }
 }

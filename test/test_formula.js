@@ -1,10 +1,11 @@
 /// <reference path="../src/formula.js" />
 
 var expect = require('chai').expect,
-    formula = require('../src/formula'),
-    AND = formula.and,
-    OR = formula.or,
-    NOT = formula.not;
+    Formula = require('../src/formula'),
+    AND = Formula.AND,
+    OR = Formula.OR,
+    NOT = Formula.NOT,
+    TXT = Formula.TXT;
 
 describe('formula', function() {
     
@@ -13,9 +14,12 @@ describe('formula', function() {
             var expr = AND('a', 'b', 'c');
     
             expect(expr).to.be.a('object');
-            expect(expr).to.have.property('and');
-            expect(expr.and).to.be.a('array');
-            expect(expr.and).to.have.length(3);
+            expect(expr).to.have.property('op');
+            expect(expr.op).to.equal('and');
+            
+            expect(expr).to.have.property('args');
+            expect(expr.args).to.be.a('array');
+            expect(expr.args).to.have.length(3);
         });
     });
 
@@ -24,9 +28,12 @@ describe('formula', function() {
             var expr = OR('a', 'b', 'c');
     
             expect(expr).to.be.a('object');
-            expect(expr).to.have.property('or');
-            expect(expr.or).to.be.a('array');
-            expect(expr.or).to.have.length(3);
+            expect(expr).to.have.property('op');
+            expect(expr.op).to.equal('or');
+            
+            expect(expr).to.have.property('args');
+            expect(expr.args).to.be.a('array');
+            expect(expr.args).to.have.length(3);
         });
     });
 
@@ -35,10 +42,45 @@ describe('formula', function() {
             var expr = NOT('a');
     
             expect(expr).to.be.a('object');
-            expect(expr).to.have.property('not');
-            expect(expr.not).to.be.a('string');
-            expect(expr.not).to.equal('a');
+            expect(expr).to.have.property('op');
+            expect(expr.op).to.equal('not');
+            
+            expect(expr).to.have.property('args');
+            expect(expr.args).to.be.a('string');
+            expect(expr.args).to.equal('a');
+
         });
     });
+    
+    describe("txt()", function () {
+        it('parsing of formula', function () {
+            var expr = TXT('and(1, 2, 3)');
+    
+            expect(expr).to.be.a('object');
+            expect(expr).to.have.property('op');
+            expect(expr.op).to.equal('and');
+            
+            expect(expr).to.have.property('args');
+            expect(expr.args).to.be.a('array');
+            expect(expr.args).to.have.length(3);
+
+        });
+    });
+    
+    describe("eval()", function () {
+        it('evaluation of formula', function () {
+            var expr = TXT('and(not("a"), "b", "c")');
+
+            var data = { "a": false, "b": true, "c": true };
+            var fe = function(id) { return data[id]; }
+            var val = expr.eval(fe);
+            
+            expect(val).to.equal(true);
+            
+            data["a"] = true;
+            val = expr.eval(fe);
+            expect(val).to.equal(false);
+        });
+    });    
 
 });
