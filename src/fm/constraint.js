@@ -1,6 +1,6 @@
 'use strict';
 var uuid = require('node-uuid'),
-    Formula = require('./formula');
+    Formula = require('../logic/formula');
 
 var Constraint = function (formulaText, id) {
 	this._id = id || uuid.v4();

@@ -1,7 +1,7 @@
-/// <reference path="../src/constraint.js" />
+/// <reference path="../../src/fm/constraint.js" />
 
 var expect = require('chai').expect,
-    Constraint = require('../src/constraint');
+    Constraint = require('../../src/fm/constraint');
 
 describe('constraint', function () {
 

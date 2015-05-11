@@ -1,7 +1,7 @@
-/// <reference path="../src/formula.js" />
+/// <reference path="../../src/logic/formula.js" />
 
 var expect = require('chai').expect,
-    Formula = require('../src/formula'),
+    Formula = require('../../src/logic/formula'),
     AND = Formula.AND,
     OR = Formula.OR,
     NOT = Formula.NOT,

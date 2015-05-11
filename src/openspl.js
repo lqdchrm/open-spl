@@ -1,8 +1,8 @@
 'use strict';
 
-var Feature = require('./feature'),
-	Constraint = require('./constraint'),
-	formula = require('./formula');
+var Feature = require('./fm/feature'),
+	Constraint = require('./fm/constraint'),
+	formula = require('./logic/formula');
 
 module.exports = {
 	Feature: Feature,

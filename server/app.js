@@ -1,6 +1,6 @@
-/// <reference path="../src/constraint.js" />
+/// <reference path="../src/fm/constraint.js" />
 
-var Constraint = require('../src/constraint');
+var Constraint = require('../src/fm/constraint');
 
 var c = new Constraint('and(not(5), 6)');
 var e = function (id) {

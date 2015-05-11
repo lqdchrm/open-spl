@@ -1,7 +1,7 @@
-/// <reference path="../src/feature.js" />
+/// <reference path="../../src/fm/feature.js" />
 
 var expect = require('chai').expect,
-    Feature = require('../src/feature');
+    Feature = require('../../src/fm/feature');
 
 describe('feature', function () {
 
