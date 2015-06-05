@@ -2,10 +2,10 @@
 
 var Feature = require('./fm/feature'),
 	Constraint = require('./fm/constraint'),
-	formula = require('./logic/formula');
+	Formula = require('./logic/formula');
 
 module.exports = {
 	Feature: Feature,
 	Constraint: Constraint,
-	formula: formula
+	Formula: Formula
 };

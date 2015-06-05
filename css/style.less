@@ -1,0 +1,76 @@
+@import "elements.less";
+
+@panelColor: #222;
+@panelChromeColor: lighten(@panelColor, 10%);
+@textColor: #fff;
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+	margin: 0;
+	padding: 0;
+    font-family: 'Yanone Kaffeesatz', sans-serif;
+}
+
+body {
+	display: flex;
+	flex-direction: row;
+    
+	background: #111;
+	color: #ccc;
+
+	margin: 0;
+	padding: 0;
+    height: 100vH;
+    overflow: hidden;
+}
+
+.panel {
+    background: @panelColor;
+    border: 1px solid black;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.7);
+
+    header {
+        .gradient(@panelChromeColor, @panelColor, @panelChromeColor);
+        border-radius: 5px 5px 0 0;
+        flex: 0 1 auto;
+        padding: 2px;
+        font-size: 1.1em;
+        text-align: center;
+    }
+    
+    .content {
+        width: 100%;
+        flex: 1 1 auto;
+        padding: 2px;
+        margin: auto;
+        overflow: auto;
+    }
+    
+    footer {
+        .gradient(@panelChromeColor, @panelChromeColor, @panelColor);
+        border-radius: 0 0 5px 5px;
+        flex: 0 1 auto;
+        padding: 2px;
+        font-size: 0.9em;
+        color: mix(@textColor, @panelChromeColor, 40%);
+    }
+}
+
+#sidebar {
+	flex: 0 1 auto;
+	margin: 10px;
+	margin-right: 0px;
+    min-width: 200px;
+}
+
+#main-view {
+	flex: 1 1 auto;
+	margin: 10px;
+}

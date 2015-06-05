@@ -21,7 +21,7 @@ var _eval = function(expr, cb) {
         case 'not':
             return !_eval(expr.args, cb);
         default:
-            return cb(expr); 
+            return cb(expr);
     }
 };
 
