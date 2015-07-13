@@ -1,7 +1,7 @@
 /// <reference path="../../src/fm/fm.js" />
 
 var expect = require('chai').expect,
-    FM = require('../../src/fm/fm');
+    FM = require('../../src/openspl').FM;
 
 describe('feature model', function () {
 

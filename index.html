@@ -1,24 +1,60 @@
 <html>
+
 <head>
-	<title>OpenSPL - Tests</title>
-	<link rel="stylesheet" href="css/style.css">
+    <title>OpenSPL - Tests</title>
+    <link rel="stylesheet" href="css/style.css">
     <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro|Yanone+Kaffeesatz|Bangers' rel='stylesheet' type='text/css'>
+    <script src="js/way.min.js"></script>
+    <script src="js/bundle.js"></script>
 </head>
+
 <body>
-	<div id="sidebar" class="panel">
+    <div id="sidebar" class="panel">
         <header>Project</header>
         <div class="content">
-            
+            <div way-repeat="fm.features">
+                <input type="text" way-data="name">
+            </div>
+            <input type="button" onclick="console.log(JSON.stringify(way.get('fm'))); way.updateBindings('fm'); way.backup();" value="Save">
         </div>
         <footer>1/12 files</footer>
     </div>
-	
+
     <div id="main-view" class="panel">
         <header>Graph</header>
-        <div class="content">
-
-        </div>
+        <textarea id="output" way-data="fm" way-json="true"></textarea>
         <footer>Status: ready</footer>
     </div>
+
+    <script>        
+        var FM = OpenSPL.FM;
+
+        var fm = way.get('fm');
+        
+        if (fm == null || fm == undefined) {
+            console.warn('recreating fm');
+            fm = new FM();
+	       
+            var car, engine, transmission, c1, config;
+            
+            fm.addFeature(
+                car = new FM.Feature('car'),
+                engine = new FM.Feature('engine'),
+                transmission = new FM.Feature('transmission')
+            ).addConstraint(
+                c1 = new FM.Constraint('and(car, engine, transmission)')
+            ).addConfig(
+                config = new FM.Config()
+                    .set(car, true)
+                    .set(engine, true)
+                    .set(transmission, false)
+            );        
+        } else {
+            console.log('fm loaded from local storage');
+        }
+        way.set('fm', fm);
+        way.updateBindings('fm');
+    </script>
 </body>
+
 </html>

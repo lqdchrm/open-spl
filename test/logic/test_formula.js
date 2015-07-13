@@ -24,7 +24,7 @@ describe('formula', function() {
     });
 
     describe("or()", function () {
-        it('disunction of formulas', function () {
+        it('disjunction of formulas', function () {
             var expr = OR('a', 'b', 'c');
     
             expect(expr).to.be.a('object');
