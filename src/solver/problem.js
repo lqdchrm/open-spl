@@ -1,14 +1,26 @@
 'use strict';
 
-function Problem(size, expected, clauses) {
-    this.size = size || 0;
-    this.expected = expected || 'UNKNOWN';
-    this.clauses = clauses || null;
+/**
+ * @constructor
+ * @param {number} numVars
+ * @param {Array.<Array>} clauses
+ * @param {boolean} satisfiable
+ */
+function Problem(numVars, clauses, satisfiable) {
+    this.numVars = numVars || 0;
+    this.clauses = clauses || [];
+    this.satisfiable = satisfiable || null;
 }
 
+/**
+ * creates a problem instance from a DIMACS string.
+ * 
+ * @param {string} dimacs DIMACS-string
+ * @return {Problem}
+ */
 Problem.fromDimacs = function (dimacs) {
     var lines = dimacs.replace('\r', '').split('\n'),
-        size = 0,
+        numVars = 0,
         clauses = [],
         clause,
         lit,
@@ -22,7 +34,7 @@ Problem.fromDimacs = function (dimacs) {
             case 'c': // skip comments
                 break;
             case 'p': // parse problem, should be 'p cnf numVars numClauses'
-                size = Number(tokens[2]);
+                numVars = Number(tokens[2]);
                 break;
             default:  // parse clause
                 i = 0;
@@ -41,7 +53,7 @@ Problem.fromDimacs = function (dimacs) {
         }
     });
 
-    return new Problem(size, null, clauses);
+    return new Problem(numVars, clauses);
 };
 
 module.exports = Problem;

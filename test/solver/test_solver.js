@@ -6,22 +6,23 @@ var expect = require('chai').expect,
     Solver = require('../../src/solver/solver');
 
 describe('solver', function () {
-    describe("solve()", function () {
-        var idx, problem;
-        for (idx in Problems) {
-            problem = Problems[idx];
-            it('check problem ' + idx + ' for expected value: ' + problem.expected, function () {
+    var idx;
+    for (idx in Problems) {
+        describe("solve()", function () {
+            var problem = Problems[idx];
+            it('check problem ' + idx + ' for expected value: ' + problem.satisfiable, function () {
+                            
                 var result = Solver.solve(problem);
             
-                switch (problem.expected) {
-                case 'SAT':
-                    expect(result).to.equal(true);
+                switch (problem.satisfiable) {
+                case true:
+                    expect(result.satisfiable).to.equal(true);
                     break;
-                case 'UNSAT':
-                    expect(result).to.equal(false);
+                case false:
+                    expect(result.satisfiable).to.equal(false);
                     break;
                 }
             });
-        }
-    });
+        });
+    }
 });

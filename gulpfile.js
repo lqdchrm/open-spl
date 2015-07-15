@@ -24,7 +24,7 @@ gulp.src = function () {
 gulp.task('test', function () {
     return gulp.src(['test/**/*.js'], { read: false })
         .pipe(mocha({
-        reporter: 'spec'
+        reporter: 'list' // list, spec, nyan, min, landing, dot
     }));
 });
 

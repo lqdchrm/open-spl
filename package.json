@@ -29,6 +29,7 @@
     "should": "^6.0.1"
   },
   "dependencies": {
-    "node-uuid": "^1.4.3"
+    "node-uuid": "^1.4.3",
+    "performance-now": "^0.2.0"
   }
 }

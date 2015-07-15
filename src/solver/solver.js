@@ -1,408 +1,55 @@
 'use strict';
 
-/*
- * sat.js
- * (C) 2012, all rights reserved,
+var now = require('performance-now'),
+    Problem = require('./problem'),
+	Solver1 = require('./impl/solver1');
+
+/**
+ * SolverResult.
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * @constructor
+ * @param {object} solverImpl
+ * @param {Problem} problem
+ * @param {boolean} satisfiable true|false|null
+ * @param {string} proof
+ * @param {number} timeNeededInMs
+ */
+function SolverResult(solverImpl, problem, satisfiable, proof, timeNeededInMs) {
+	this.solverImpl = solverImpl || null;
+    this.problem = problem || null;
+    
+    this.satisfiable = satisfiable || null;
+	this.proof = proof || null;
+	this.timeNeededInMs = timeNeededInMs || null;
+}
+
+/**
+ * Calls an implementation's solve method and returns a solver result object.
+ * 
+ * @param {object} solverImpl
+ * @param {Problem} problem
+ * @return {SolverResult}
+ */
+function solve(solverImpl, problem) {
+    var result = new SolverResult(solverImpl, problem),
+        start = now();
+
+    result.satisfiable = solverImpl.solve(problem.numVars, problem.clauses);
+    result.timeNeededInMs = (now() - start).toFixed(3);
+
+    return result;
+}
+
+/**
+ * solve function instantiated with solver impl
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * @param {Problem} problem
+ * @return {SolverResult}
  */
-
-/*
- * DESCRIPTION:
- *     This is a SAT solver implemented in javascript.
- */
-
-/*
- * State constructor.
- */
-function State() {
-    this.empty = false;
-    this.vars = [null];
-    this.clauses = [];
-    this.trail = [];
-    this.dlevel = 0;
-    this.tlevel = 0;
-}
-
-/*
- * Variable constructor.
- */
-function Variable() {
-    this.set = false;
-    this.sign = false;
-    this.mark = false;
-    this.unit = false;
-    this.unit_sign = false;
-    this.dlevel = 0;
-    this.reason = null;
-    this.watches = [[], []];
-
-    this.setUnit = function (sign) {
-        this.unit = true;
-        this.unit_sign = sign;
-    };
-}
-
-/*
- * Literal helper functions.
- */
-function literalGetIdx(literal) {
-    return (literal < 0 ? -literal : literal);
-}
-
-function literalGetSign(literal) {
-    return (literal < 0);
-}
-
-function literalGetVar(state, literal) {
-    var idx = literalGetIdx(literal);
-    return state.vars[idx];
-}
-
-function literalIsFalse(state, literal) {
-    var v = literalGetVar(state, literal);
-    return (v.set && v.sign !== literalGetSign(literal));
-}
-
-function literalGetMark(state, literal) {
-    var v = literalGetVar(state, literal);
-    return v.mark;
-}
-
-function literalAddWatch(state, literal, clause) {
-    var v = literalGetVar(state, literal),
-        watch = v.watches[Number(literalGetSign(literal))];
-    
-    watch.push(clause);
-}
-function literalSet(state, literal, reason) {
-    var v = literalGetVar(state, literal);
-    v.sign = literalGetSign(literal);
-    v.set = true;
-    v.dlevel = state.dlevel;
-    v.reason = reason;
-    state.trail.push(literal);
-}
-
-/*
- * Add a new clause.
- */
-function satAddClause(state, clause) {
-    switch (clause.length) {
-    case 0:
-        // Empty clause:
-        state.empty = true;
-        return;
-
-    case 1:
-        var v = literalGetVar(state, clause[0]),
-            sign = literalGetSign(clause[0]);
-        if (v.unit) {
-            if (sign !== v.unit_sign) {
-                state.empty = true;
-            }
-            return;
-        }
-        v.setUnit(sign);
-        return;
-
-    default:
-        literalAddWatch(state, clause[0], clause);
-        literalAddWatch(state, clause[1], clause);
-    }
-}
-
-/*
- * Select a literal.  Chooses a literal at random (provided not already set).
- */
-function satSelectLiteral(state) {
-    var M = 1,
-        N = state.vars.length - 1,
-        i = Math.floor(M + (1 + N - M) * Math.random()),
-        i0 = i,
-        literal;
-
-    while (state.vars[i].set) {
-        i = i + 1;
-        if (i >= state.vars.length) {
-            i = 1;
-        }
-        if (i === i0) {
-            return 0;
-        }
-    }
-
-
-    literal = (Math.random() < 0.5 ? -i : i);
-    return literal;
-}
-
-/*
- * Solver main loop.
- */
-function satSolve(size, clauses) {
-    // Create the state:
-    var state = new State(),
-        i,
-        v,
-        literal;
-    
-    for (i = 0; i < size; i++) {
-        state.vars.push(new Variable());
-    }
-    
-    for (i = 0; i < clauses.length; i++) {
-        satAddClause(state, clauses[i]);
-    }
-
-    // UNSAT if empty clause has been asserted:
-    if (state.empty) {
-        return false;
-    }
-
-    // Find and propagate unit clauses:
-    for (i = 1; i < state.vars.length; i++) {
-        v = state.vars[i];
-        if (v.unit) {
-            literal = (v.unit_sign ? -i : i);
-            if (!satUnitPropagate(state, literal, null)) {
-                return false;
-            }
-        }
-    }
-
-    // Main loop:
-    for (state.dlevel = 1; true; state.dlevel++) {
-        literal = satSelectLiteral(state);
-        
-        if (literal === 0) {
-            // All variables are now set; and no conflicts; therefore SAT
-            return true;
-        }
-        if (!satUnitPropagate(state, literal, null)) {
-            // UNSAT
-            return false;
-        }
-    }
-
-    return true;
-}
-
-/*
- * Unit propagation.
- */
-function satUnitPropagate(state, literal, reason) {
-    var curr, next,
-        restart, v, watch, i,
-        clause, watch_idx, watch_lit, watch_sign, w, j, new_lit;
-
-    do {
-        curr = state.trail.length;
-        next = curr + 1;
-
-        literalSet(state, literal, reason);
-
-        restart = false;
-        while (curr < next) {
-            literal = state.trail[curr];
-            curr++;
-            literal = -literal;
-            v = literalGetVar(state, literal);
-            watch = v.watches[Number(literalGetSign(literal))];
-            for (i = 0; i < watch.length; i++) {
-                clause = watch[i];
-                watch_idx = Number(clause[0] === literal);
-                watch_lit = clause[watch_idx];
-                watch_sign = literalGetSign(watch_lit);
-                w = literalGetVar(state, watch_lit);
-                if (w.set && w.sign === watch_sign) {
-                    // 'clause' is true -- no work to do.
-                    continue;
-                }
-
-                // Search for a non-false literal in 'clause'.
-                for (j = 2; j < clause.length && literalIsFalse(state, clause[j]); j++) {
-                    // nop
-                }
-            
- 
-                if (j >= clause.length) {
-                    // All other literals a false; use the other watch:
-                    if (!w.set) {
-                        // Implied set:
-                        if (watch_idx !== 0) {
-                            clause[0] = watch_lit;
-                            clause[1] = literal;
-                        }
-                        literalSet(state, watch_lit, clause);
-                        next++;
-                        continue;
-                    }
-
-                    // All literals in 'clause' are false; conflict!
-                    reason = satBacktrack(state, clause);
-                    if (reason === null) {
-                        return false;
-                    }
-                    
-                    literal = reason[0];
-                    restart = true;
-                    break;
-                }
-
-                // Watch the other literal:
-                new_lit = clause[j];
-                clause[Number(!watch_idx)] = new_lit;
-                clause[j] = literal;
-                literalAddWatch(state, new_lit, clause);
-                if (i === watch.length - 1) {
-                    watch.pop();
-                } else {
-                    watch[i] = watch.pop();
-                    i--;
-                }
-            }
-
-            if (restart) {
-                break;
-            }
-        }
-    } while (restart);
-
-    return true;
-}
-
-/*
- * Backtracking and no-good learning.
- */
-function satBacktrack(state, reason) {
-    var conflicts = [],
-        count = 0,
-        i,
-        v,
-        tlevel,
-        literal,
-        w,
-        k,
-        nogood,
-        blevel;
-
-    // Level 0 failure; no work to do.
-    if (state.dlevel === 0) {
-        return null;
-    }
-
-    // Mark literals in reason:
-    for (i = 0; i < reason.length; i++) {
-        v = literalGetVar(state, reason[i]);
-        if (v.dlevel === 0) {
-            continue;
-        }
-        v.mark = true;
-        if (v.dlevel < state.dlevel) {
-            conflicts.push(reason[i]);
-        } else {
-            count++;
-        }
-    }
-
-    // Find the UIP and collect conflicts:
-    tlevel = state.trail.length - 1;
-    do {
-        if (tlevel < 0) {
-            return null;
-        }
-        
-        literal = state.trail[tlevel--];
-        v = literalGetVar(state, literal);
-        v.set = false;
-        if (!v.mark) {
-            continue;
-        }
-        v.mark = false;
-        count--;
-        if (count <= 0) {
-            break;
-        }
-        for (i = 1; i < v.reason.length; i++) {
-            literal = v.reason[i];
-            w = literalGetVar(state, literal);
-            if (w.mark || w.dlevel === 0) {
-                continue;
-            }
-            if (w.dlevel < state.dlevel) {
-                conflicts.push(literal);
-            } else {
-                count++;
-            }
-            w.mark = true;
-        }
-    } while (true);
-
-    // Simplify the conflicts; create the no-good.
-    nogood = [-literal];
-    blevel = 0;
-    for (i = 0; i < conflicts.length; i++) {
-        literal = conflicts[i];
-        v = literalGetVar(state, literal);
-        if (v.reason !== null) {
-            for (k = 1; k < v.reason.length && literalGetMark(state, v.reason[k]); k++) {
-                // nop
-            }
-
-            if (k >= v.reason.length) {
-                continue;
-            }
-        }
-        
-        nogood.push(literal);
-        
-        if (blevel < v.dlevel) {
-            blevel = v.dlevel;
-            nogood[nogood.length - 1] = nogood[1];
-            nogood[1] = literal;
-        }
-    }
-
-    // Unwind the trail:
-    while (tlevel >= 0) {
-        literal = state.trail[tlevel];
-        v = literalGetVar(state, literal);
-        if (v.dlevel <= blevel) {
-            break;
-        }
-        v.set = false;
-        tlevel--;
-    }
-    state.trail.length = tlevel + 1;
-
-    // Clear the marks:
-    for (i = 0; i < conflicts.length; i++) {
-        v = literalGetVar(state, conflicts[i]);
-        v.mark = false;
-    }
-
-    // Add the no-good clause:
-    satAddClause(state, nogood);
-    state.dlevel = blevel;
-    if (state.empty) {
-        return null;
-    }
-
-    return nogood;
+function exportSolve(problem) {
+    return solve(Solver1, problem);
 }
 
 module.exports = {
-	solve: function (problem) { return satSolve(problem.size, problem.clauses); }
+    solve : exportSolve
 };

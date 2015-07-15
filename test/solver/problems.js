@@ -1,6 +1,6 @@
 'use strict';
 
-var Problem = require('./problem');
+var Problem = require('./../../src/solver/problem');
 
 var quinn = Problem.fromDimacs(
         'c quinn.cnf' + '\n' +
@@ -27,7 +27,6 @@ var quinn = Problem.fromDimacs(
 
 var example = new Problem(
 	497,
-	'SAT',
     [
         [109],
         [-110],
@@ -5756,7 +5755,8 @@ var example = new Problem(
         [-497, 494, -495, 496],
         [-497, -494, 495, 496],
         [497, 494, 495, 496]
-    ]
+    ],
+    true
 );
 
 module.exports = {
